@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <meta charset="utf-8">
+          <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          <meta http-equiv="Cache-Control" content="no-store" />
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+
+          <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+          <!-- <link rel="stylesheet" href="includes/js/script.js"> -->
+          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+          <link rel="stylesheet" type="text/css" href="style.css">
+        
+          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+          <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+  <h1>Agriculture production of different foodgrains from year 2003 to 2014 at all India level
+</h1>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<div class="well">
+<ul class="nav nav-pills nav-justified">
+  <li role="presentation" class="active"><a href="../index.html">Graph 1</a></li>
+  <li role="presentation"><a href="FoodgrainsVsProduction.html">Graph 2</a></li>
+  <li role="presentation"><a href="CommercialCropsTotalVsYearGraph.html">Graph 3</a>
+  <li role="presentation"><a href="RiceProductionOfSouthernStatesGraph.html">Graph 4</a>
+
+  </li>
+</ul>
+</div>
+<br><br>
+<h3>For the year 2013, plot the all the Foodgrains type vs. production, in descending order.</h3>
+<script>
+// set the dimensions of the canvas
+var margin = {top: 10, right: 50, bottom: 200, left:100},
+    width = 1500 - margin.right - margin.left,
+    height = 700 - margin.top - margin.bottom;
+
+
+var svg = d3.select("body")
+    .append("svg")
+      .attr ({
+        "width": width + margin.right + margin.left,
+        "height": height + margin.top + margin.bottom
+      })
+    .append("g")
+      .attr("transform","translate(" + margin.left + "," + margin.right + ")");
+
+
+
+var xScale = d3.scale.ordinal()
+    .rangeRoundBands([0,width], 0.1, 0.1);
+
+var yScale = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient("left");
+
+
+d3.json("../output/FoodgrainsVsProduction.json", function(data) {
+ 
+
+  data.sort(function (a,b) {
+    return b.value-a.value;
+    // body...
+  })
+  data.forEach(function(d) {
+    d.Particulars = d.Particulars;
+    d.value = +d.value;       // try removing the + and see what the console prints
+    console.log(d.value);   // use console.log to confirm
+  });
+
+
+  // Specify the domains of the x and y scales
+  xScale.domain(data.map(function(d) { return d.Particulars; }) );
+  yScale.domain([0, d3.max(data, function(d) { return d.value; } ) ]);
+  
+
+  svg.selectAll('rect')
+    .data(data)
+    .enter()
+    .append('rect')
+    .attr("height", 0)
+    .attr("y", height)
+    .style("fill","#6A5ACD")
+    
+    // attributes can be also combined under one .attr
+    .attr({
+      "x": function(d) { return xScale(d.Particulars); },
+      "y": function(d) { return yScale(d.value); },
+      "width": xScale.rangeBand(),
+      "height": function(d) { return  height - yScale(d.value); }
+    })
+    
+svg.selectAll('text')
+            .data(data)
+            .enter()
+            .append('text')
+            .text(function(d){
+                return d.value;
+            })
+            .attr({
+                "x": function(d){ return xScale(d.Particulars)+ xScale.rangeBand()/1.9; },
+                "y": function(d){ return yScale(d.value) -4; },
+                "font-family": 'sans-serif',
+                "font-size": '13px',
+                "font-weight": 'bold', 
+                "fill": 'red',
+                "text-anchor": 'middle'
+            });
+
+
+    // Draw xAxis and position the label
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .selectAll("text")
+        .attr("transform", "rotate(-60)" )
+        .style("text-anchor", "end")
+        .attr("font-size", "10px");
+
+
+    // Draw yAxis and postion the label
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height/2)
+        .attr("dy", "-5em")
+        .style("text-anchor", "middle")
+        .text(" values");
+
+
+
+});
+
+
+
+</script>
+</body>
+
